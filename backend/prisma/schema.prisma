@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RequestStatus {
+  open
+  in_progress
+  closed
+}
+
+enum DiscountType {
+  percent
+  absolute
+}
+
+model CommodityGroup {
+  id        String    @id            // e.g. "001"
+  category  String
+  group     String
+  requests  Request[]
+}
+
+model Request {
+  id               String         @id @default(uuid())
+  requestorName    String
+  title            String
+  vendorName       String
+  vatId            String
+
+  commodityGroupId String
+  commodityGroup   CommodityGroup @relation(fields: [commodityGroupId], references: [id])
+
+  department       String
+  totalCost        Decimal        @db.Decimal(18,2)
+  extras           Decimal        @db.Decimal(18,2) @default(0)
+  status           RequestStatus  @default(open)
+  orderLines       OrderLine[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model OrderLine {
+  id                  String   @id @default(uuid())
+  request             Request  @relation(fields: [requestId], references: [id])
+  requestId           String
+  positionDescription String
+  unitPrice           Decimal  @db.Decimal(18,2)
+  amount              Decimal  @db.Decimal(18,3)
+  unit                String
+
+  // New optional discount fields
+  discountType        DiscountType?
+  discountValue       Decimal? @db.Decimal(18,2)
+
+  totalPrice          Decimal  @db.Decimal(18,2)
+}

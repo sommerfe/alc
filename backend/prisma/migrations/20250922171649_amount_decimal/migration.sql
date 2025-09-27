@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "OrderLine" ALTER COLUMN "amount" SET DATA TYPE DECIMAL(18,3);
